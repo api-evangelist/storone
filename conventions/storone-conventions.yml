@@ -1,0 +1,265 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://docs.onestor.com/books/rest-api — every page of the S1 REST API reference (19 reference
+  pages plus the Curl and Python examples) read on 2026-08-29 and reconciled against the 164
+  documented operations.
+name: StorONE S1 REST API conventions
+description: >-
+  Cross-cutting runtime semantics of the S1 REST API, read from StorONE's own reference. The API is
+  a verb-in-path RPC surface over HTTP rather than a resource-oriented REST API: paths end in an
+  action (/applications/volumes/create, /applications/snapshots/take) and the HTTP method is used
+  loosely alongside it. It is compact and consistent, and it is also deliberately spare — there is no
+  idempotency mechanism, no pagination, no rate-limit signalling and no request-id header anywhere in
+  the published contract.
+auth:
+  style: opaque session token in the Authorization header
+  obtained_by: POST /login
+  detail: authentication/storone-authentication.yml
+url_shape:
+  style: RPC-over-HTTP with the action in the path segment
+  pattern: /<resource>[/<subresource>]/<action>
+  actions_observed:
+    - create
+    - add
+    - edit
+    - delete
+    - list
+    - take
+    - restore
+    - schedule
+    - run
+    - start
+    - stop
+    - enable
+    - disable
+    - pair
+    - unpair
+    - test
+  methods:
+    GET: 58
+    PUT: 52
+    POST: 32
+    DELETE: 22
+  note: >-
+    The method does not carry the semantics on its own — PUT is used for edits, restores, mounts,
+    enables and disables alike, and DELETE only ever pairs with a /delete, /stop or /unpair path.
+    An agent must read the path, not the verb.
+operation_count: 164
+resources:
+  applications: 40
+  notifications: 21
+  resources: 15
+  monitoring: 13
+  nodes: 12
+  hosts: 12
+  replication: 10
+  templates: 9
+  floatingips: 6
+  nas_servers: 5
+  workflows: 4
+  users: 4
+  settings: 4
+  systems: 3
+  configurations: 2
+content_types:
+  request: application/json-patch+json
+  response: application/json
+  note: >-
+    Every write operation in the reference declares Content-Type application/json-patch+json even
+    though the bodies are plain JSON objects, not RFC 6902 JSON Patch documents. This is an artifact
+    of the generator, but it is what the contract says, and the published Python example sends plain
+    application/json and works — so both are accepted in practice.
+idempotency:
+  supported: false
+  header: null
+  scope: null
+  retention: null
+  evidence: >-
+    No Idempotency-Key or equivalent appears anywhere in the 164 documented operations, in any
+    request schema, or in either code example. Retrying a POST /applications/volumes/create or
+    POST /applications/snapshots/take is not deduplicated by the API.
+  agent_guidance: >-
+    Because there is no idempotency key, an agent that times out on a create must list before
+    retrying (GET /applications/volumes/list, GET /applications/snapshots/list) to avoid creating a
+    duplicate object.
+pagination:
+  supported: false
+  style: none
+  params: []
+  response_fields: []
+  evidence: >-
+    No page, offset, cursor, per_page or limit parameter on any /list operation. List operations
+    return the whole collection. Several endpoints accept a filter parameter that narrows by name
+    (for example "Limit results by the volume name" on the volume and application listings), and
+    GET /monitoring/top/volumes accepts a count of top volumes to show, but neither is pagination.
+filtering:
+  supported: true
+  style: named query parameters that narrow by entity name
+  examples:
+    - GET /applications/volumes/list — limit results by the volume name
+    - GET /applications/list — limit results by the application instance name
+    - GET /notifications/targets/list — limit results by the notification target name
+    - GET /monitoring/performance/history — limit results for a specific node
+field_expansion:
+  supported: false
+sparse_fieldsets:
+  supported: false
+metadata:
+  supported: false
+  note: No user-defined metadata/tag bag on S1 objects in the published contract.
+request_id_tracing:
+  supported: false
+  header: null
+  note: >-
+    No X-Request-Id, correlation or trace header is documented on requests or responses. Diagnosis
+    goes through the system's own logging and the notification/alert stream, not through per-request
+    identifiers returned to the caller.
+async_operations:
+  supported: true
+  mechanism: >-
+    Many write operations accept an `async` boolean query parameter, and several also accept
+    `uncommitAndAggregateId` (a string) so a caller can group work. There is no documented
+    operation-status resource to poll and no callback, so the completion signal for an async call is
+    not published.
+  gap: >-
+    An agent cannot reliably await an async S1 operation from the published contract alone; it must
+    poll the relevant /list endpoint or watch the notification stream.
+versioning:
+  in_url: false
+  in_header: false
+  scheme: product release version, not an API version
+  discovery: GET /Version returns component/version/build triples for the running system
+  note: >-
+    The API is not versioned independently of the S1 software. A customer's API surface is whatever
+    their installed release ships, which is why GET /Version is the first call an integrator makes.
+  detail: lifecycle/storone-lifecycle.yml
+error_envelope:
+  style: bare string
+  detail: errors/storone-problem-types.yml
+  summary: >-
+    Errors are returned as a JSON string, not as a structured object. Every operation but login
+    documents exactly two outcomes — 200 OK and 400 Bad Request — with the 400 body typed as
+    `string`. There is no error code, no type URI and no machine-readable field to branch on.
+  rfc9457: false
+success_envelope:
+  style: mixed
+  variants:
+    - 'Read operations wrap payloads as {"Result": {"Data": [...]}} — confirmed by the published
+      Python example, which reads login_resp.json()["Result"]["Data"].'
+    - 'Some operations return a plain JSON string as the 200 body (for example
+      PUT /applications/snapshots/restore).'
+    - 'A "Status" field appears widely in nested payload objects with values like "OK" and
+      "SystemPerformance"; it describes the health of the described object, not the outcome of the
+      HTTP call.'
+rate_limit_signalling:
+  supported: false
+  detail: rate-limits/storone-rate-limits.yml
+webhooks_out:
+  supported: partial
+  note: >-
+    S1 pushes alerts outward to configured targets — email, syslog, SNMP, Seq, Slack (which takes a
+    WebhookUrl) and StorONE support — via POST /notifications/targets/<type>/add. There is no
+    generic customer-defined HTTP webhook target and no event-subscription contract, so this is
+    alert fan-out, not a webhook API.
+reversibility:
+  applicable: true
+  grade: documented
+  summary: >-
+    S1 is a write-heavy control plane whose destructive operations are mostly not reversible through
+    the API. The one true reversal path is snapshot restore, and it is non-destructive by design —
+    it creates a NEW volume from the snapshot rather than rolling the original back — so the safe
+    undo for a data change is "restore beside, then re-map". Deletes of the control-plane objects
+    themselves (volumes, applications, shares, object stores, access keys, hosts, mappings, users,
+    notification targets) have no documented undo, and StorONE publishes no window for any of them.
+    Graded `documented` rather than `verified` because a reversal path exists but no published
+    window bounds it — snapshot retention is configured per schedule by the customer, so the window
+    is tenant-defined and cannot be stated here.
+  write_surfaces:
+    - surface: Volume data change
+      reversal: PUT /applications/snapshots/restore
+      reversal_semantics: >-
+        "Create a new volume from a snapshot." Takes Application, Volume and a Suffix for the new
+        volume, plus cgid and snapshot query parameters. The source volume is untouched.
+      window: >-
+        Bounded by snapshot retention, which the customer sets with the Retention[] array on
+        PUT /applications/snapshots/schedule. StorONE publishes no default and no maximum, so no
+        window can be stated.
+      window_stated_by_provider: false
+      docs: https://docs.onestor.com/books/rest-api/page/applications
+    - surface: Snapshot deletion
+      reversal: none
+      operation: DELETE /applications/snapshots/delete
+      window: null
+      note: No undelete operation is documented.
+      docs: https://docs.onestor.com/books/rest-api/page/applications
+    - surface: Volume deletion
+      reversal: none
+      operation: DELETE /applications/volumes/delete
+      window: null
+      note: >-
+        No undelete. Recovery depends on a snapshot taken before the delete, and on whether the
+        snapshot survives the volume — which the docs do not state.
+      docs: https://docs.onestor.com/books/rest-api/page/applications
+    - surface: Application instance deletion
+      reversal: none
+      operation: DELETE /applications/delete
+      window: null
+    - surface: Object store / access key deletion
+      reversal: none
+      operations:
+        - DELETE /applications/objects/stores/delete
+        - DELETE /applications/objects/access_keys/delete
+        - DELETE /applications/objects/stores/access_keys/delete
+      window: null
+      note: >-
+        Access keys can be recreated but not recovered — the secret is not retrievable after
+        creation.
+    - surface: Host / volume mapping
+      reversal: re-add
+      operations:
+        - DELETE /applications/mappings/delete
+        - POST /applications/mappings/add
+      window: unbounded
+      note: >-
+        Mapping is configuration, not data. Deleting a mapping disconnects a host from a volume and
+        re-adding it restores access, so this write is reversible by re-application at any time.
+    - surface: Replication
+      reversal: restart
+      operations:
+        - DELETE /replication/stop
+        - POST /replication/start
+      window: unbounded
+      note: >-
+        Stopping replication is reversible by starting it again, though the docs do not state
+        whether the restart resyncs incrementally or from scratch.
+    - surface: Floating IP pairing
+      reversal: re-pair
+      operations:
+        - DELETE /floatingips/unpair
+        - POST /floatingips/pair
+      window: unbounded
+    - surface: Notification target
+      reversal: disable / re-enable
+      operations:
+        - PUT /notifications/targets/disable
+        - PUT /notifications/targets/enable
+        - DELETE /notifications/targets/delete
+      window: unbounded
+      note: >-
+        Disable is the reversible form; delete is not reversible but the target can be re-added from
+        the same parameters.
+  agent_guidance: >-
+    Before any DELETE on this API, take a snapshot (POST /applications/snapshots/take) — it is the
+    only undo the contract offers, and it must exist before the destructive call, not after.
+dry_run_mode:
+  supported: false
+  note: >-
+    No preview, validate-only or dry-run parameter on any of the 164 operations. POST
+    /notifications/test exists but tests a notification target's delivery, not a pending change.
+cross_links:
+  errors: errors/storone-problem-types.yml
+  lifecycle: lifecycle/storone-lifecycle.yml
+  authentication: authentication/storone-authentication.yml
+  rate_limits: rate-limits/storone-rate-limits.yml
+  data_model: data-model/storone-data-model.yml

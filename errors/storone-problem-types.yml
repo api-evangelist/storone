@@ -1,0 +1,76 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://docs.onestor.com/books/rest-api — response tables of all 164 documented S1 REST API
+  operations, read 2026-08-29.
+name: StorONE S1 REST API error catalog
+description: >-
+  The S1 REST API has one of the flattest error contracts in the catalog. Across 164 documented
+  operations only three status codes appear, and the error body is typed as a bare JSON `string` —
+  no code, no type URI, no field pointer, no retry hint. There is no published error-code registry
+  to enrich this from: the searchable StorONE documentation carries no error reference page for the
+  API. What follows is therefore the complete published error surface, not a sample of it.
+format: bare-string
+rfc9457: false
+problem_json: false
+error_envelope:
+  media_type: application/json
+  schema: string
+  example: '"string"'
+  note: >-
+    The reference gives the 400 example response literally as "string" — a generated placeholder.
+    StorONE does not publish a single real error message, so the actual text an integrator will see
+    is not knowable from public material.
+status_codes:
+  - status: 200
+    meaning: OK
+    description: Success
+    occurrences: 215
+  - status: 400
+    meaning: Bad Request
+    description: Bad Request
+    schema: string
+    occurrences: 211
+    note: >-
+      The universal failure code. Every non-login operation collapses validation errors, missing
+      objects, permission failures and system-state conflicts into this one response.
+  - status: 401
+    meaning: Unauthorized
+    description: Unauthorized
+    schema: string
+    occurrences: 1
+    documented_on: POST /login
+    note: >-
+      401 is documented only on the login operation. It is not listed on any other operation even
+      though every other operation requires the session token, so an agent should expect 401 on an
+      expired token regardless of what the reference says.
+problem_types: []
+problem_types_note: >-
+  No named problem types, error codes or error identifiers are published for this API. Emitting a
+  derived list would be invention, so this array is deliberately empty.
+absent:
+  - 403 is never documented, so authorization failures are not distinguishable from validation
+    failures.
+  - 404 is never documented — a request for a nonexistent volume or application returns 400, not 404.
+  - 409 is never documented, so concurrent-modification conflicts have no distinct signal.
+  - 429 is never documented; there is no rate limiting (see rate-limits/storone-rate-limits.yml).
+  - 5xx is never documented, so a caller cannot tell a client mistake from a server fault by status.
+agent_guidance: >-
+  Treat any 400 as non-retryable without inspection: because validation, not-found and
+  permission failures all share the code, a blind retry will loop. Read the string body, and confirm
+  state with the matching /list operation before deciding. Treat 401 as "re-run POST /login" on any
+  operation, not just login.
+related_event_surface:
+  note: >-
+    The richest diagnostic vocabulary StorONE publishes is not an error catalog but the
+    notification/alert stream — GET /notifications/query returns system events, and targets can be
+    configured for email, syslog, SNMP, Seq, Slack and StorONE support. Operational faults surface
+    there rather than in API responses.
+  docs: https://docs.onestor.com/books/rest-api/page/notifications
+x-evidence:
+  - url: https://docs.onestor.com/books/rest-api/page/applications
+    http_status: 200
+    fetched: '2026-08-29'
+  - url: https://docs.onestor.com/books/rest-api/page/login
+    http_status: 200
+    fetched: '2026-08-29'

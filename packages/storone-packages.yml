@@ -1,0 +1,76 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  npm registry search (registry.npmjs.org), PyPI, GitHub org lookup and
+  https://docs.onestor.com/books/cli — all checked 2026-08-29.
+name: StorONE packages and SDKs
+description: >-
+  StorONE publishes no client libraries. There is no SDK in any package registry, no GitHub
+  organization, and no first-party wrapper for the S1 REST API in any language. The only first-party
+  client software is the S1 CLI, and it is distributed as a binary downloaded from the customer's own
+  controller node rather than from a registry — so it has no version metadata endpoint to query and
+  no public URL. The nearest thing to an SDK StorONE offers is a ~40-line reference Python script in
+  the docs, published under a permissive reference-design licence, that logs in and lists volumes.
+package_count: 0
+official_sdk_count: 0
+packages: []
+registries_checked:
+  - registry: npm
+    query: storone
+    result: no first-party package; the registry search returned nothing attributable to StorONE.
+    checked: '2026-08-29'
+  - registry: PyPI
+    queries:
+      - storone
+      - s1-storone
+      - storone-sdk
+    result: 404 on every candidate.
+    checked: '2026-08-29'
+  - registry: GitHub
+    query: github.com/storone (org)
+    result: >-
+      404 Not Found — StorONE has no GitHub organization. A repository search for "storone" returns
+      only unrelated projects (a Russian-language coursework repo set and an unrelated storOne.io).
+    checked: '2026-08-29'
+first_party_clients:
+  - name: StorONE CLI (S1 CLI)
+    kind: cli-binary
+    official: true
+    registry: none
+    version: 3.8.0
+    published: null
+    published_note: >-
+      No release date is published. The CLI ships with the S1 release and is downloaded from the
+      controller node landing page, so there is no registry metadata endpoint and no dated artifact
+      to read. Version 3.8.0 is stated on the supported-platforms page.
+    distribution: https://docs.onestor.com/books/38-release-notes/page/storone-cli-requirements-and-supported-platforms
+    docs: https://docs.onestor.com/books/cli
+    detail: cli/storone-cli.yml
+  - name: StorONE REST API reference Python script
+    kind: reference-sample
+    official: true
+    registry: none
+    version: null
+    published: null
+    published_note: >-
+      A code sample in the docs, not a package — no version, no release, no import path. Copyright
+      notice reads 2012-2023 StorONE and grants a licence to use, copy, modify, distribute and
+      sublicense the reference script. The docs page revision predates the 3.8 line.
+    url: https://docs.onestor.com/books/rest-api/page/python
+    language: Python
+    dependencies:
+      - requests
+  - name: StorONE REST API curl example
+    kind: reference-sample
+    official: true
+    registry: none
+    version: null
+    published: null
+    published_note: A two-call shell example (login, then list volumes). Not a package.
+    url: https://docs.onestor.com/books/rest-api/page/curl
+    language: shell
+consequence: >-
+  With no SDK and no OpenAPI document published, every integrator writes their own HTTP client from
+  the reference pages by hand. That is the single largest developer-experience gap in this profile
+  and the cheapest one for StorONE to close — the widdershins-shaped reference proves an OpenAPI
+  document already exists internally.

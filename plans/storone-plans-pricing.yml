@@ -1,0 +1,46 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://www.storone.com/pricing/ (soft-404), https://www.storone.com/ and
+  https://www.storone.com/request-a-demo/ — probed 2026-08-29.
+name: StorONE plans and pricing
+description: >-
+  StorONE publishes no pricing of any kind. /pricing/ exists as a URL but resolves to a WordPress
+  category archive whose body reads "It seems we can't find what you're looking for" — a soft 404
+  returning HTTP 200, so it must be read as a body and not credited on its status code. There is no
+  price list, no tier table, no per-TB rate and no calculator anywhere on the site. Every commercial
+  path is a form: Request a Demo, or Contact Us. This is normal for enterprise storage sold through
+  partners and resellers, but it means an integrator or an agent cannot determine cost from public
+  material.
+plan_count: 0
+plans: []
+pricing_model:
+  published: false
+  motion: contact-sales / partner channel
+  licensing_note: >-
+    The 3.8.0 release notes describe a new licensing mechanism with GUI and CLI support (license
+    upload, license view), which confirms S1 is licensed per deployment — but the license terms and
+    prices are not published.
+  source: https://docs.onestor.com/books/38-release-notes/page/380-release-notes
+commercial_entry_points:
+  - name: Request a Demo
+    url: https://www.storone.com/request-a-demo/
+    status: 200
+  - name: Contact Us
+    url: https://www.storone.com/contact-us/
+    status: 200
+  - name: Partners
+    url: https://www.storone.com/partners/
+    status: 200
+free_tier: false
+trial:
+  published: false
+  note: No self-service trial or download is offered; evaluation goes through the demo form.
+x-evidence:
+  - url: https://www.storone.com/pricing/
+    http_status: 200
+    verdict: soft-404 — WordPress category archive, body reads "It seems we can't find what you're looking for."
+    fetched: '2026-08-29'
+  - url: https://www.storone.com/request-a-demo/
+    http_status: 200
+    fetched: '2026-08-29'

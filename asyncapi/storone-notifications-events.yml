@@ -1,0 +1,78 @@
+generated: '2026-08-29'
+method: searched
+source: https://docs.onestor.com/books/rest-api/page/notifications
+name: StorONE S1 event and alert delivery surface
+description: >-
+  S1 has a real outbound event surface — it pushes system alerts to configured destinations — but it
+  is an appliance alerting fan-out, not a webhook API. There is no AsyncAPI document, no event
+  catalog with typed payloads, no subscription contract and, critically, no generic customer-defined
+  HTTP webhook target. The one webhook-shaped transport is Slack-specific: it takes a WebhookUrl and
+  posts to Slack. An integrator who wants S1 events in an arbitrary system uses syslog or Seq, not a
+  webhook.
+asyncapi_published: false
+webhooks_published: false
+webhooks_note: >-
+  Deliberately not wired as type Webhooks in apis.yml. Configuring StorONE to POST alerts into
+  Slack's own incoming-webhook URL is not the same as StorONE offering webhooks to integrators, and
+  claiming otherwise would credit them with an agent surface they do not ship. Recorded as an
+  absence with the evidence, which is the honest measurement.
+delivery_model: push, fan-out to operator-configured targets
+transports:
+  - id: email
+    add: POST /notifications/targets/email/add
+    edit: PUT /notifications/targets/email/edit
+    settings:
+      - GET /notifications/settings/email/show
+      - PUT /notifications/settings/email/edit
+      - PUT /notifications/settings/email/reset
+    note: 3.8.0 added custom SMTP settings.
+  - id: syslog
+    add: POST /notifications/targets/syslog/add
+    edit: PUT /notifications/targets/syslog/edit
+    standard: Syslog (RFC 5424)
+    note: The most portable integration point for a third-party system.
+  - id: snmp
+    add: POST /notifications/targets/snmp/add
+    edit: PUT /notifications/targets/snmp/edit
+    standard: SNMP
+  - id: seq
+    add: POST /notifications/targets/seq/add
+    edit: PUT /notifications/targets/seq/edit
+    note: Seq structured log server.
+  - id: slack
+    add: POST /notifications/targets/slack/add
+    edit: PUT /notifications/targets/slack/edit
+    field: WebhookUrl
+    note: >-
+      The only HTTP-push transport. It targets Slack's incoming webhook URL specifically; there is
+      no equivalent for an arbitrary endpoint.
+  - id: storone_support
+    add: POST /notifications/targets/storone_support/add
+    note: >-
+      Routes alerts to StorONE support directly. Consequential — it shares system state with the
+      vendor — and pairs with the node support tunnel (PUT /nodes/support/tunnel/enable).
+management:
+  list: GET /notifications/targets/list
+  delete: DELETE /notifications/targets/delete
+  enable: PUT /notifications/targets/enable
+  disable: PUT /notifications/targets/disable
+  test: POST /notifications/test
+  settings: GET /notifications/settings/show
+pull_model:
+  operation: GET /notifications/query
+  note: >-
+    Events can also be pulled. This is the endpoint an agent polls, and it is the richest diagnostic
+    vocabulary S1 publishes — richer than the API's own error contract, which collapses every
+    failure into a 400 with a bare string body.
+event_catalog:
+  published: false
+  note: >-
+    No enumerated list of event/alert types with codes and payload schemas is published, so the
+    event vocabulary cannot be captured here without inventing it.
+audit:
+  note: 3.8.0 added an audit log for user operations and configuration changes.
+  source: https://docs.onestor.com/books/38-release-notes/page/380-release-notes
+x-evidence:
+  - url: https://docs.onestor.com/books/rest-api/page/notifications
+    http_status: 200
+    fetched: '2026-08-29'

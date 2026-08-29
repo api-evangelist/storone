@@ -1,0 +1,86 @@
+generated: '2026-08-29'
+method: searched
+source: https://docs.onestor.com/books/38-release-notes
+name: StorONE S1 release notes
+description: >-
+  StorONE publishes release notes per S1 release inside the public documentation repository, one
+  BookStack book per minor line. Each release page is structured — New Features and Improvements
+  (broken out by System, Auto-tiering, OmniUI, GUI, Replication, Snapshots, Logging), Fixed Issues,
+  and Behavior Changes — which makes it a genuine changelog rather than a marketing what's-new.
+  What it is not is dated: the pages carry BookStack revision timestamps, not release dates, so a
+  reader cannot tell when 3.8.0 shipped from the changelog itself.
+scheme: product release (major.minor.patch)
+current_version: 3.8.0
+dated: false
+dated_note: >-
+  No release dates are published on any release-notes page. The only time signal is BookStack's own
+  "Updated N months ago" metadata on the page revision — the 3.8.0 page showed "Updated 8 months
+  ago" when read on 2026-08-29.
+channels:
+  - name: 3.8 Release Notes
+    url: https://docs.onestor.com/books/38-release-notes
+  - name: 3.7 Release Notes
+    url: https://docs.onestor.com/books/37-release-notes
+machine_readable: false
+rss: false
+entries:
+  - version: 3.8.0
+    date: null
+    url: https://docs.onestor.com/books/38-release-notes/page/380-release-notes
+    breaking: false
+    highlights:
+      system:
+        - Embedded management service — no external relay machine required.
+        - >-
+          Multi-system management (MSM), a lightweight service installed on a Windows machine or VM
+          to manage multiple systems; required as a quorum witness when replicating between systems
+          with embedded management services.
+        - Drives can be unapproved from a pool so they can be reused in another pool.
+        - Drive revival.
+        - Improved drive LED support.
+        - Volume recycle bin with configurable retention.
+        - Secure erase for drives with multiple methods (Shred, Sanitize, NVMe formats).
+        - New licensing mechanism with GUI and CLI support.
+        - Self-service version upgrades.
+        - SSD pool support for file system metadata.
+        - Custom SMTP settings.
+        - Floating IP pairing without the "Dummy" designation.
+      auto_tiering:
+        - System idleness based on specific drive pool utilization.
+        - HA-aware lower tier locks for evacuation.
+      omniui_gui_cli_rest_api:
+        - Multi-admin approval for critical changes, configured with action policies.
+        - Enhanced MFA with automatic reconnection.
+        - Improved configuration history with user tracking.
+      gui:
+        - Context-specific action buttons per element (Edit, Delete, Secure Erase).
+      replication:
+        - Configurable witness settings via CLI and GUI.
+        - Witness log viewing.
+      snapshots:
+        - Distributed VSS snapshot support for NFS datastores.
+        - Improved snapshot deletion scheduler.
+      logging:
+        - Audit log for user operations and configuration changes.
+        - System console log access from the GUI and CLI.
+    fixed:
+      - Host mapping deletion via the web UI.
+      - Distributed VSS snapshot consistency.
+    behavior_changes:
+      - Evacuation messages removed from the console log.
+  - version: 3.7.61
+    date: null
+    url: https://docs.onestor.com/books/37-release-notes/page/3761
+  - version: 3.7.60
+    date: null
+    url: https://docs.onestor.com/books/37-release-notes/page/3760
+finding_reference_lag:
+  observation: >-
+    The 3.8.0 release notes describe capabilities the published REST API reference does not carry —
+    drive unapprove and revive, secure erase, licensing (license upload / license view), volume
+    recycle bin, and multi-admin approval action policies. The REST API book's pages were last
+    revised roughly two years before this read, while 3.8.0 is roughly eight months old.
+  consequence: >-
+    An integrator reading docs.onestor.com/books/rest-api is reading a pre-3.8 surface. The
+    operation inventory captured elsewhere in this repo is therefore a floor, not a ceiling — the
+    real 3.8.0 API is larger than the 164 operations documented.

@@ -1,0 +1,27 @@
+generated: '2026-08-29'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml + OpenAPI hosts
+hosts:
+- host: www.storone.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Oct  2 20:04:17 2026 GMT
+  hsts: false
+- host: docs.onestor.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Nov 26 09:02:42 2026 GMT
+  hsts: true
+  hsts_max_age: 604800
+domains:
+- domain: storone.com
+  dnssec: false
+  caa: []
+  spf: true
+  dmarc: true
+  dmarc_policy: quarantine
+- domain: onestor.com
+  dnssec: false
+  caa: []
+  spf: true
+  dmarc: false

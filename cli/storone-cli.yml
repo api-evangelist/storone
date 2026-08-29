@@ -1,0 +1,124 @@
+generated: '2026-08-29'
+method: searched
+source: https://docs.onestor.com/books/cli
+name: StorONE CLI (S1 CLI)
+description: >-
+  StorONE ships a first-party command line client for S1 with the same command surface as the web UI
+  and the REST API — StorONE's own documentation calls the three together "OmniUI". It is not
+  distributed through any package registry: the binary is downloaded from the landing page of a
+  StorONE controller node, which means the CLI version is always matched to the system it manages,
+  and there is no public URL to install it from.
+docs: https://docs.onestor.com/books/cli
+version: 3.8.0
+distribution:
+  method: download from the S1 controller node landing page
+  registry: none
+  public_download_url: null
+  note: >-
+    "The StorONE CLI is a standalone client application. You can download the CLI client for your
+    operating system (Windows or Linux) by navigating in your browser to the name or IP address of
+    one of the StorONE controller nodes." There is no npm, PyPI, Homebrew, apt or GitHub release —
+    a prospective user cannot obtain it without first having a system.
+install:
+  - platform: Windows
+    method: download the .exe from the controller node and double-click
+  - platform: Linux
+    method: download the binary from the controller node and run it at the terminal
+requirements:
+  disk: 150 MB
+  memory: 200 MB
+  network: TCP port 18008 to the S1 controller nodes
+  source: https://docs.onestor.com/books/38-release-notes/page/storone-cli-requirements-and-supported-platforms
+supported_platforms:
+  windows:
+    - Windows 10 Home
+    - Windows 10 Pro
+    - Windows 11 Home
+    - Windows 11 Pro
+  windows_server:
+    - Windows Server 2012 R2
+    - Windows Server 2016
+    - Windows Server 2019
+    - Windows Server 2022
+  linux:
+    - 'RHEL-compatible (Fedora, CentOS, Oracle Linux): 8.3, 8.5, 8.7, 8.9, 9.1, 9.3'
+    - 'Ubuntu: 18.04, 20.04, 22.04, 23.10, 24.04'
+    - 'SUSE Linux: 12.5, 15.2, 15.3, 15.4, 15.5'
+grammar:
+  shape: <command> <subcommand...> <positional arguments> --options
+  rules:
+    - A command that follows another command is a subcommand (in `systems list`, `list` is a
+      subcommand of `systems`).
+    - Any string beginning with a hyphen is an option; an option cannot precede a command or
+      subcommand.
+    - Any non-option string following the last subcommand is a positional argument; positional
+      arguments appear in angle brackets in the help text.
+    - Options cannot be specified before a positional argument.
+  example: >-
+    applications objects access_keys create <accessKey> --secretKey=<secretKey>
+    --role=<objectPermissions>
+  help: <command> help or <command> -h
+mode:
+  interactive: true
+  note: >-
+    The CLI is interactive rather than one-shot: it prompts for a relay name or IP address,
+    remembers previous connections in a Select Connection menu, and provides auto-completion and
+    interactive help. `logout` returns to the connection prompt; `exit` leaves the application.
+basic_commands:
+  - command: exit
+    description: Exit the CLI application.
+  - command: logout
+    description: Log out of the remote connection and return to the connection prompt.
+  - command: version
+    description: Display the S1 CLI version plus the relay and S1 software versions.
+  - command: refresh
+    description: >-
+      Synchronize auto-complete between the CLI and the S1 system — needed when several CLI clients
+      are connected to the same system simultaneously.
+  - command: clear
+    description: Clear the screen.
+command_groups:
+  - group: users
+    url: https://docs.onestor.com/books/cli/page/users
+  - group: configurations
+    url: https://docs.onestor.com/books/cli/page/configurations
+  - group: systems
+    url: https://docs.onestor.com/books/cli/page/systems
+  - group: applications
+    url: https://docs.onestor.com/books/cli/chapter/applications
+    subgroups:
+      - managing applications
+      - volumes
+      - encryption
+      - snapshots
+      - shares
+      - file systems
+      - objects
+      - mappings
+  - group: settings
+    url: https://docs.onestor.com/books/cli/page/settings
+  - group: floating ips
+    url: https://docs.onestor.com/books/cli/page/floating-ips
+  - group: hosts
+    url: https://docs.onestor.com/books/cli/page/hosts
+  - group: monitoring
+    url: https://docs.onestor.com/books/cli/page/monitoring
+  - group: nodes
+    url: https://docs.onestor.com/books/cli/page/nodes
+  - group: notifications
+    url: https://docs.onestor.com/books/cli/page/notifications
+  - group: nas
+    url: https://docs.onestor.com/books/cli/page/nas
+newer_commands_from_release_notes:
+  note: Named in the 3.8.0 release notes but not yet in the CLI book.
+  commands:
+    - resources drives unapprove
+    - resources drives revive
+    - action_policies create
+    - license upload
+    - license view
+  source: https://docs.onestor.com/books/38-release-notes/page/380-release-notes
+local_storage:
+  note: >-
+    The CLI can save metrics and logs to the folder containing the executable, which needs disk
+    capacity beyond the 150 MB install footprint.

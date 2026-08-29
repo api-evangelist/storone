@@ -1,0 +1,47 @@
+generated: '2026-08-29'
+method: generated
+source: https://docs.onestor.com/books/rest-api
+name: StorONE Agent Skills
+description: >-
+  Packaged operating instructions for the StorONE S1 REST API, one per marquee flow. Every operation
+  referenced is published in StorONE's own REST API reference at docs.onestor.com — none is invented.
+  Each skill also carries the runtime facts an agent gets wrong on this API by default: the action is
+  in the path rather than the HTTP verb, there is no idempotency key, every failure is an
+  undifferentiated 400 with a string body, and snapshot restore creates a NEW volume rather than
+  rolling one back.
+api: StorONE S1 REST API
+base_url: https://{s1-controller-node}
+skills:
+  - name: storone-provision-block-volume
+    file: storone-provision-block-volume.md
+    description: >-
+      Provision a block volume and present it to an iSCSI, FC or NVMe-oF host, from pool through
+      application, volume, host registration and mapping.
+    operation_count: 14
+  - name: storone-snapshot-and-restore
+    file: storone-snapshot-and-restore.md
+    description: >-
+      Take, schedule and restore snapshots — the only reversal path this API publishes — including
+      what restore actually does and how the retention window is set.
+    operation_count: 10
+  - name: storone-provision-nas-and-object
+    file: storone-provision-nas-and-object.md
+    description: >-
+      Provision SMB/NFS shares or S3-compatible object stores in the strict order the object graph
+      requires, including the file-system step most integrations skip.
+    operation_count: 18
+  - name: storone-monitor-capacity-and-health
+    file: storone-monitor-capacity-and-health.md
+    description: >-
+      Read health, capacity, performance, utilization, ALUA and drive SMART data, and route system
+      alerts to email, syslog, SNMP, Seq, Slack or StorONE support.
+    operation_count: 24
+grounding:
+  operations_documented: 164
+  operations_source: https://docs.onestor.com/books/rest-api
+  openapi_available: false
+  note: >-
+    No OpenAPI document is published, so these skills are grounded in method+path pairs and the
+    published operation descriptions rather than in operationIds from a spec. The reference is
+    widdershins-generated, which means an OpenAPI exists internally at StorONE; if it is ever
+    published, these skills should be re-grounded against it.

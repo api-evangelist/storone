@@ -1,0 +1,217 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://docs.onestor.com/books/rest-api/page/schemas plus the per-resource reference pages,
+  read 2026-08-29. Relationships are read from the request/response schemas of the 164 documented
+  operations — from which identifier a call requires to address a child object.
+name: StorONE S1 data model
+description: >-
+  The S1 object graph is a storage control plane. At the top is the System (a StorONE cluster), which
+  owns physical Resources (nodes, drives, network ports) and logical Applications. An Application is
+  a consistency group: the unit S1 snapshots, replicates and reports on. Volumes live inside
+  Applications; everything a host or client actually consumes — block LUNs via mappings, SMB/NFS
+  shares via a file system, S3 buckets via an object store — hangs off a Volume. Entities are
+  addressed by NAME, not by opaque ID, which is the single most important thing to know about
+  integrating with this API.
+identifier_scheme:
+  primary: human-assigned names, passed as string parameters
+  examples:
+    - Application (application instance name)
+    - Volume (volume name)
+    - accessKey (object access key name, a positional CLI argument)
+  numeric_ids:
+    - cgid — consistency group id, an int64 query parameter accepted alongside Application on
+      snapshot operations
+    - snapshot — an int64 snapshot id on PUT /applications/snapshots/restore
+  note: >-
+    There are no prefixed opaque identifiers (no vol_..., no app_...). A caller composes URLs from
+    names it either chose or read from a /list call, so name collisions and renames are the caller's
+    problem to manage. PUT /systems/rename exists and will move the identity of a whole system.
+entities:
+  - name: System
+    description: A StorONE S1 cluster. GET /systems/list, GET /systems/select, PUT /systems/rename.
+    operations: [GET /systems/list, GET /systems/select, PUT /systems/rename]
+  - name: Node
+    description: >-
+      A controller node in the system. Carries sessions, CHAP/iSNS configuration, takeover/giveback
+      HA operations and the StorONE support tunnel.
+    operations: [GET /nodes/list, GET /nodes/sessions, PUT /nodes/edit, PUT /nodes/connect,
+                 PUT /nodes/takeover, PUT /nodes/giveback, PUT /nodes/chap, PUT /nodes/isns,
+                 PUT /nodes/support/tunnel/enable, PUT /nodes/support/tunnel/disable,
+                 GET /nodes/support/tunnel/status, GET /nodes/utils/run]
+  - name: Drive
+    description: A physical drive, optionally SED-encrypted, with SMART data and a performance analyzer.
+    operations: [GET /resources/drives/list, PUT /resources/drives/approve, GET /resources/drives/smart,
+                 GET /resources/drives/performance_analyzer, PUT /resources/drives/sed/initialize,
+                 PUT /resources/drives/sed/supply_password]
+  - name: Pool
+    description: A pool of approved drives that backs volumes.
+    operations: [GET /resources/drives/pools/list, POST /resources/drives/pools/create,
+                 PUT /resources/drives/pools/edit]
+  - name: Application
+    description: >-
+      An application instance — S1's consistency group. The unit of snapshotting, encryption and
+      replication.
+    operations: [GET /applications/list, POST /applications/create, PUT /applications/edit,
+                 DELETE /applications/delete, PUT /applications/encryption/supply_encryption_key,
+                 GET /applications/encryption/encryption_key_example]
+  - name: Volume
+    description: A logical volume inside an Application. The parent of every consumable surface.
+    operations: [GET /applications/volumes/list, POST /applications/volumes/create,
+                 PUT /applications/volumes/edit, DELETE /applications/volumes/delete]
+  - name: Snapshot
+    description: A point-in-time image of a volume or consistency group; manual or scheduled.
+    operations: [GET /applications/snapshots/list, POST /applications/snapshots/take,
+                 PUT /applications/snapshots/schedule, PUT /applications/snapshots/restore,
+                 DELETE /applications/snapshots/delete, PUT /applications/snapshots/vss]
+  - name: FileSystem
+    description: A file system on a volume — required before NAS shares or object stores.
+    operations: [GET /applications/filesystems/list, POST /applications/filesystems/add,
+                 PUT /applications/filesystems/edit, PUT /applications/filesystems/mount,
+                 POST /applications/filesystems/fstrim/run, GET /applications/filesystems/fstrim/status]
+  - name: Share
+    description: An SMB or NFS share inside a volume's file system.
+    operations: [GET /applications/shares/list, POST /applications/shares/add,
+                 PUT /applications/shares/edit, DELETE /applications/shares/delete]
+  - name: ObjectStore
+    description: An S3-style object store on a specific volume.
+    operations: [GET /applications/objects/stores/list, POST /applications/objects/stores/create,
+                 PUT /applications/objects/stores/edit, DELETE /applications/objects/stores/delete]
+  - name: ObjectAccessKey
+    description: >-
+      An access key with a role (object permissions). Exists system-wide and is then attached to
+      individual object stores.
+    operations: [GET /applications/objects/access_keys/list, POST /applications/objects/access_keys/create,
+                 PUT /applications/objects/access_keys/edit, DELETE /applications/objects/access_keys/delete,
+                 PUT /applications/objects/stores/access_keys/add,
+                 DELETE /applications/objects/stores/access_keys/delete]
+  - name: Host
+    description: An iSCSI / FC / NVMe-oF initiator, identified by WWN, paired to the system.
+    operations: [GET /hosts/list, POST /hosts/create, PUT /hosts/edit, DELETE /hosts/delete,
+                 POST /hosts/pair, DELETE /hosts/unpair, PUT /hosts/wwn/add, DELETE /hosts/wwn/delete]
+  - name: Mapping
+    description: The join between a Volume and a Host that makes a LUN visible.
+    operations: [GET /applications/mappings/list, POST /applications/mappings/add,
+                 PUT /applications/mappings/edit, DELETE /applications/mappings/delete,
+                 GET /hosts/mappings/list, POST /hosts/mappings/add, PUT /hosts/mappings/edit,
+                 DELETE /hosts/mappings/delete]
+  - name: NasServer
+    description: A NAS server, optionally joined to Active Directory, that fronts SMB/NFS shares.
+    operations: [GET /nas_servers/list, POST /nas_servers/create, PUT /nas_servers/edit,
+                 DELETE /nas_servers/delete, PUT /nas_servers/active_directory/test_join]
+  - name: FloatingIP
+    description: A virtual IP paired to a node/NAS server for failover.
+    operations: [GET /floatingips/list, POST /floatingips/create, PUT /floatingips/edit,
+                 DELETE /floatingips/delete, POST /floatingips/pair, DELETE /floatingips/unpair]
+  - name: Replication
+    description: A replication relationship between systems, with its own floating IPs.
+    operations: [GET /replication/list, POST /replication/start, DELETE /replication/stop,
+                 PUT /replication/edit, PUT /replication/primary, GET /replication/refresh,
+                 GET /replication/floatingips/list, POST /replication/floatingips/create,
+                 POST /replication/floatingips/edit, DELETE /replication/floatingips/delete]
+  - name: Template
+    description: A reusable provisioning template for applications and volumes, with snapshot schedules.
+    operations: [GET /templates/list, POST /templates/create, PUT /templates/edit,
+                 DELETE /templates/delete, GET /templates/volumes/list, POST /templates/volumes/create,
+                 PUT /templates/volumes/edit, DELETE /templates/volumes/delete,
+                 PUT /templates/snapshots/schedule]
+  - name: User
+    description: An S1 system user account. The identity the session token represents.
+    operations: [GET /users/list, POST /users/create, PUT /users/edit, DELETE /users/delete]
+  - name: NotificationTarget
+    description: >-
+      A destination for system alerts. Typed by transport — email, syslog, SNMP, Seq, Slack, or
+      StorONE support — each with its own add/edit pair.
+    operations: [GET /notifications/targets/list, POST /notifications/targets/email/add,
+                 POST /notifications/targets/syslog/add, POST /notifications/targets/snmp/add,
+                 POST /notifications/targets/seq/add, POST /notifications/targets/slack/add,
+                 POST /notifications/targets/storone_support/add,
+                 PUT /notifications/targets/enable, PUT /notifications/targets/disable,
+                 DELETE /notifications/targets/delete, POST /notifications/test]
+relationships:
+  - from: System
+    to: Node
+    type: has_many
+    via: system scope
+  - from: System
+    to: Application
+    type: has_many
+    via: system scope
+  - from: Node
+    to: Drive
+    type: has_many
+  - from: Pool
+    to: Drive
+    type: has_many
+    via: approved drives
+  - from: Application
+    to: Volume
+    type: has_many
+    via: Application (name)
+  - from: Volume
+    to: Application
+    type: belongs_to
+    via: Application (name) on every volume operation
+  - from: Application
+    to: Snapshot
+    type: has_many
+    via: cgid / Application
+  - from: Volume
+    to: Snapshot
+    type: has_many
+    via: Volume (name)
+  - from: Volume
+    to: FileSystem
+    type: has_one
+    via: Volume (name)
+  - from: FileSystem
+    to: Share
+    type: has_many
+  - from: Volume
+    to: ObjectStore
+    type: has_one
+    via: Volume (name)
+  - from: ObjectStore
+    to: ObjectAccessKey
+    type: has_many
+    via: PUT /applications/objects/stores/access_keys/add
+  - from: Volume
+    to: Mapping
+    type: has_many
+  - from: Host
+    to: Mapping
+    type: has_many
+  - from: Mapping
+    to: Volume
+    type: belongs_to
+  - from: Mapping
+    to: Host
+    type: belongs_to
+  - from: NasServer
+    to: Share
+    type: has_many
+  - from: NasServer
+    to: FloatingIP
+    type: has_many
+    via: POST /floatingips/pair
+  - from: Template
+    to: Volume
+    type: has_many
+    via: template volume definitions
+  - from: Replication
+    to: Application
+    type: has_many
+    via: replicated consistency groups
+  - from: Replication
+    to: FloatingIP
+    type: has_many
+    via: /replication/floatingips/*
+provisioning_order:
+  note: >-
+    The graph implies a strict creation order that the API does not enforce for you. Workflow
+    endpoints exist that encode it — GET /workflows/volume_provisioning, and the /block, /NAS and
+    /Object variants — and they are the closest thing to a guided path the contract offers.
+  block: Pool -> Application -> Volume -> Host (+ WWN) -> Mapping
+  nas: Pool -> Application -> Volume -> FileSystem -> NasServer (+ FloatingIP) -> Share
+  object: Pool -> Application -> Volume -> FileSystem -> ObjectStore -> ObjectAccessKey
+render: null

@@ -1,0 +1,84 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://docs.onestor.com/books/38-release-notes and https://docs.onestor.com/books/rest-api,
+  read 2026-08-29; status/trust subdomains probed the same day.
+name: StorONE S1 lifecycle
+description: >-
+  S1 is customer-deployed software, and its API lifecycle is the software's lifecycle: there is no
+  independently versioned API, no deprecation policy, no sunset headers and no hosted status page,
+  because there is no StorONE-operated service to have uptime. What StorONE does publish is a
+  product release-notes series per minor version, with a behaviour-changes section — which is the
+  closest thing to a deprecation signal an integrator gets.
+versioning:
+  api_versioned_independently: false
+  scheme: product semantic-ish release (major.minor.patch, e.g. 3.7.60, 3.7.61, 3.8.0)
+  current_documented_release: 3.8.0
+  in_url: false
+  in_header: false
+  discovery_operation: GET /Version
+  discovery_response_shape:
+    Versions:
+      - Component: string
+        Version: string
+        BuildNumber: string
+  note: >-
+    Because the customer chooses when to upgrade, two StorONE customers can be running materially
+    different API surfaces at the same time. GET /Version is the only way for a client to find out
+    which one it is talking to, and StorONE publishes no per-operation "available since" annotations
+    to pair with it.
+deprecation:
+  policy_published: false
+  policy_url: null
+  sunset_header: false
+  deprecation_header: false
+  rfc8594: false
+  deprecated_operations: []
+  signal_available: >-
+    Each release-notes page carries a "Behavior Changes" section (3.8.0 has one, covering Logging).
+    That is the only channel through which a breaking change is announced, and it is prose in a
+    release note, not a machine-readable deprecation.
+  gap: >-
+    No sunset dates, no advance-notice commitment, and no deprecation policy page anywhere on
+    storone.com or docs.onestor.com.
+status_page:
+  published: false
+  probed:
+    - url: https://status.storone.com/
+      result: DNS did not resolve / no response
+    - url: https://status.onestor.com/
+      result: DNS did not resolve / no response
+  note: >-
+    Correctly absent rather than missing. S1 runs on the customer's own hardware, so there is no
+    StorONE-operated service whose availability a status page could report. System health is read
+    from the customer's own system with GET /monitoring/health/current and the notification stream.
+  in_product_equivalent:
+    - GET /monitoring/health/current
+    - GET /monitoring/utilization/live
+    - GET /monitoring/performance/live
+    - GET /notifications/query
+sla:
+  published: false
+  note: >-
+    No published SLA or support-tier matrix. Support runs through the Zendesk help center at
+    https://storone.zendesk.com/hc/en-us and through POST /notifications/targets/storone_support/add,
+    which routes system alerts to StorONE support directly.
+support:
+  help_center: https://storone.zendesk.com/hc/en-us
+  in_product_support_channel: POST /notifications/targets/storone_support/add
+  remote_support: >-
+    Node-level support tunnels can be opened and closed through the API —
+    PUT /nodes/support/tunnel/enable, PUT /nodes/support/tunnel/disable,
+    GET /nodes/support/tunnel/status.
+releases:
+  channel: https://docs.onestor.com/books/38-release-notes
+  archive: https://docs.onestor.com/books/37-release-notes
+  detail: changelog/storone-changelog.yml
+platform_support:
+  cli_supported_platforms_page: https://docs.onestor.com/books/38-release-notes/page/storone-cli-requirements-and-supported-platforms
+  browsers_page: https://docs.onestor.com/books/38-release-notes/page/supported-browsers
+  note: >-
+    StorONE does publish per-release supported-platform matrices for the CLI client (Windows 10/11,
+    Windows Server 2012 R2 through 2022, RHEL-compatible 8.3–9.3, Ubuntu 18.04–24.04, SUSE 12.5–15.5)
+    and supported browsers for the web UI. That is real lifecycle discipline on the client side even
+    though the API itself has none.

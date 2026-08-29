@@ -1,0 +1,122 @@
+generated: '2026-08-29'
+method: searched
+source: https://docs.onestor.com/books/rest-api/page/login
+docs: https://docs.onestor.com/books/rest-api/page/login
+name: StorONE authentication
+description: >-
+  StorONE runs two entirely separate authentication surfaces. The S1 REST API, which manages a
+  customer's own storage system, uses a username/password login that mints an opaque session token
+  carried in the Authorization header — there is no OAuth, no API-key issuance portal and no scope
+  model, because the API is served by the customer's controller nodes and the identity store is the
+  system's own user database. The Model Context Protocol endpoint on www.storone.com is the opposite:
+  full OAuth 2.1 with PKCE, discovery metadata and a single scope.
+surfaces:
+  - id: s1-rest-api
+    name: StorONE S1 REST API
+    base_url: https://{s1-controller-node}
+    docs: https://docs.onestor.com/books/rest-api/page/login
+    schemes:
+      - id: session-token
+        type: apiKey
+        in: header
+        name: Authorization
+        scheme_name_in_docs: Token
+        description: >-
+          "API Key (Token). Parameter Name: Authorization, in: header. Authorization header token."
+          Every operation in the reference except POST /login and POST /resetpassword requires it.
+        obtained_by:
+          operation: POST /login
+          request_body:
+            Username: string
+            Password: string
+            TwoFactorAuthenticationToken: string
+            EmailVerficationUpdatedEmailAddress: string
+            EmailVerificationToken: string
+            InactivityTimeoutInMinutes: integer
+          response_field: SessionToken
+          success_status: 200
+          failure_status: 401
+        expiry:
+          model: inactivity timeout
+          controlled_by: InactivityTimeoutInMinutes on the login request
+          note: >-
+            The caller sets its own inactivity timeout at login. The docs do not publish a maximum
+            or an absolute session lifetime, and there is no documented refresh operation — a client
+            re-runs POST /login.
+        header_form:
+          documented_example: 'Authorization: Bearer <token>'
+          example_in_code_samples: 'Authorization: super-extra-long-token-from-previous-output'
+          note: >-
+            The reference shows a Bearer-prefixed example under Authentication while the curl and
+            Python examples send the raw token with no scheme prefix. That inconsistency is in
+            StorONE's own docs and is recorded here rather than resolved, because it cannot be tested
+            without a live S1 system.
+    mfa:
+      supported: true
+      field: TwoFactorAuthenticationToken on POST /login
+    password_reset:
+      operation: POST /resetpassword
+      request_body:
+        Username: string
+        Email: string
+    user_management:
+      operations:
+        - POST /users/create
+        - PUT /users/edit
+        - DELETE /users/delete
+        - GET /users/list
+      note: >-
+        Users are created and managed through the API itself, on the customer's own system. There is
+        no StorONE-hosted identity provider for this surface.
+    transport_security:
+      note: >-
+        The published Python example states the S1 system uses a self-signed certificate by default
+        and demonstrates working around it with http:// or verify=False. Credentials therefore cross
+        an unverified or plaintext channel unless the operator installs a trusted certificate. This
+        is a real, documented default and is called out because it materially affects how an agent
+        should treat this API.
+      source: https://docs.onestor.com/books/rest-api/page/python
+    oauth2: false
+    openid_connect: false
+    mutual_tls: false
+  - id: mcp-oauth
+    name: StorONE MCP server (www.storone.com)
+    base_url: https://www.storone.com/wp-json/mcp/mcp-oauth-server
+    schemes:
+      - id: oauth2-pkce
+        type: oauth2
+        flow: authorizationCode
+        pkce: S256
+        authorization_endpoint: https://www.storone.com/oauth/authorize
+        token_endpoint: https://www.storone.com/oauth/token
+        revocation_endpoint: https://www.storone.com/oauth/revoke
+        grant_types:
+          - authorization_code
+          - refresh_token
+        scopes:
+          - mcp
+        token_endpoint_auth_methods:
+          - none
+        bearer_methods:
+          - header
+        client_registration: >-
+          client_id_metadata_document_supported is true — clients identify themselves with a
+          client ID metadata document URL rather than pre-registering.
+    discovery:
+      authorization_server_metadata: https://www.storone.com/.well-known/oauth-authorization-server
+      protected_resource_metadata: https://www.storone.com/.well-known/oauth-protected-resource
+      rfc8414: true
+      rfc9728: true
+    oauth2: true
+    openid_connect: false
+    mutual_tls: false
+x-evidence:
+  - url: https://docs.onestor.com/books/rest-api/page/login
+    http_status: 200
+    fetched: '2026-08-29'
+  - url: https://docs.onestor.com/books/rest-api/page/python
+    http_status: 200
+    fetched: '2026-08-29'
+  - url: https://www.storone.com/.well-known/oauth-authorization-server
+    http_status: 200
+    fetched: '2026-08-29'

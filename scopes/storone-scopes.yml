@@ -1,0 +1,31 @@
+generated: '2026-08-29'
+method: probed
+source: https://www.storone.com/.well-known/oauth-authorization-server
+name: StorONE OAuth scopes
+description: >-
+  Only one of StorONE's two API surfaces uses OAuth at all. The S1 REST API on a customer's
+  controller nodes authenticates with a session token and has no scope model whatsoever — access is
+  governed by the S1 user account, not by scopes. The MCP server on www.storone.com publishes an
+  RFC 8414 authorization server metadata document declaring exactly one scope.
+surfaces:
+  - id: mcp-oauth
+    authorization_server: https://www.storone.com
+    scope_count: 1
+    scopes:
+      - name: mcp
+        description: >-
+          The single scope advertised in scopes_supported. StorONE publishes no scope reference page
+          and no finer-grained scopes, so what this scope grants inside the MCP server cannot be
+          stated from public material — enumerating the tools it covers requires an authenticated
+          tools/list call.
+        source: https://www.storone.com/.well-known/oauth-authorization-server
+  - id: s1-rest-api
+    scope_count: 0
+    scopes: []
+    note: >-
+      No oauth2 security scheme and no scope vocabulary in the REST API reference. Authorization is
+      the S1 user's own role on the system; object-store access keys carry a separate `role`
+      parameter (see POST /applications/objects/access_keys/create) but that is an S3-style object
+      permission, not an OAuth scope.
+docs: null
+docs_note: StorONE publishes no scopes/permissions reference page for either surface.

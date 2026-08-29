@@ -1,0 +1,92 @@
+generated: '2026-08-29'
+method: probed
+source: >-
+  https://www.storone.com/.well-known/oauth-protected-resource (RFC 9728) named the
+  resource; POST tools/list and initialize against
+  https://www.storone.com/wp-json/mcp/mcp-oauth-server returned HTTP 401 mcp_unauthorized
+  with an RFC 9728 WWW-Authenticate challenge. Probed 2026-08-29.
+name: StorONE MCP server
+description: >-
+  StorONE serves a live Model Context Protocol endpoint from its WordPress marketing site
+  at www.storone.com. It is a real, reachable remote MCP server — it answers MCP JSON-RPC
+  over HTTP with a spec-correct OAuth challenge rather than a 404 — but every method is
+  auth-gated, so the tool list and input schemas could not be enumerated anonymously.
+deployment:
+  mode: remote
+  endpoint: https://www.storone.com/wp-json/mcp/mcp-oauth-server
+  install: null
+  package: null
+  auth: oauth
+  verified: probed
+transport:
+  protocol: Streamable HTTP (JSON-RPC 2.0)
+  methods_allowed:
+    - POST
+    - GET
+    - DELETE
+  note: >-
+    The Allow header on the endpoint advertises POST, GET and DELETE, which is the
+    Streamable HTTP transport shape (POST for requests, GET for the server-to-client
+    stream, DELETE to terminate a session).
+authorization:
+  model: OAuth 2.1 authorization code with PKCE
+  authorization_server: https://www.storone.com
+  authorization_server_metadata: https://www.storone.com/.well-known/oauth-authorization-server
+  protected_resource_metadata: https://www.storone.com/.well-known/oauth-protected-resource
+  authorization_endpoint: https://www.storone.com/oauth/authorize
+  token_endpoint: https://www.storone.com/oauth/token
+  revocation_endpoint: https://www.storone.com/oauth/revoke
+  grant_types:
+    - authorization_code
+    - refresh_token
+  code_challenge_methods:
+    - S256
+  scopes:
+    - mcp
+  token_endpoint_auth_methods:
+    - none
+  client_id_metadata_document_supported: true
+  bearer_methods_supported:
+    - header
+  www_authenticate: >-
+    Bearer realm="https://www.storone.com",
+    resource_metadata="https://www.storone.com/.well-known/oauth-protected-resource"
+  rfc9728_conformant: true
+tools:
+  status: gated
+  count: null
+  note: >-
+    tools/list returns HTTP 401 mcp_unauthorized without a bearer token, so the real tool
+    set and per-tool inputSchema require authenticated introspection. Nothing was derived
+    or invented in their place. The llms.txt StorONE publishes at
+    https://www.storone.com/llms.txt is a page/post index and carries no tool list to fall
+    back on.
+scope_of_surface:
+  serves: >-
+    WordPress content on www.storone.com. The endpoint lives under /wp-json/mcp/ on the
+    marketing site, so the tools it exposes are almost certainly site/content tools rather
+    than storage-management tools.
+  does_not_serve: >-
+    The S1 storage platform. The S1 REST API documented at docs.onestor.com is served by
+    the customer's own S1 controller nodes, not by www.storone.com, and there is no MCP
+    server for it. These are two unrelated surfaces and no crosswalk between them is
+    possible or honest — which is why mcp/storone-tool-crosswalk.yml is deliberately absent.
+x-evidence:
+  - url: https://www.storone.com/.well-known/oauth-protected-resource
+    method: GET
+    http_status: 200
+    fetched: '2026-08-29'
+  - url: https://www.storone.com/.well-known/oauth-authorization-server
+    method: GET
+    http_status: 200
+    fetched: '2026-08-29'
+  - url: https://www.storone.com/wp-json/mcp/mcp-oauth-server
+    method: POST tools/list
+    http_status: 401
+    body: '{"code":"mcp_unauthorized","message":"MCP authentication required.","data":{"status":401}}'
+    fetched: '2026-08-29'
+  - url: https://www.storone.com/wp-json/mcp/v1/mcp
+    method: POST tools/list
+    http_status: 404
+    note: rest_no_route — the plugin's conventional route is not the one in use here.
+    fetched: '2026-08-29'

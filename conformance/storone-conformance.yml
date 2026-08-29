@@ -1,0 +1,204 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://docs.onestor.com/books/rest-api, https://www.storone.com/quality-policy/, and the RFC 8414
+  / RFC 9728 documents served at https://www.storone.com/.well-known/ — all read 2026-08-29.
+name: StorONE conformance
+description: >-
+  StorONE's two surfaces sit at opposite ends of the standards spectrum. The MCP endpoint on the
+  marketing site is textbook-conformant modern OAuth — RFC 8414 discovery, RFC 9728 protected
+  resource metadata, PKCE, and a spec-correct WWW-Authenticate challenge. The S1 REST API, the
+  product API, conforms to almost nothing: no OpenAPI is published, no RFC 9457 errors, no
+  RFC 8594 deprecation, no RFC 6585 rate limiting, no OAuth. What S1 does implement are STORAGE
+  standards — iSCSI, Fibre Channel, NVMe-oF, SMB, NFS, S3 and SNMP — and those are the domain
+  standards that matter for this market.
+standards:
+  - id: rfc8414
+    name: OAuth 2.0 Authorization Server Metadata
+    conforms: true
+    surface: mcp
+    evidence: >-
+      https://www.storone.com/.well-known/oauth-authorization-server returns HTTP 200 with issuer,
+      authorization_endpoint, token_endpoint, revocation_endpoint, response_types_supported,
+      grant_types_supported, code_challenge_methods_supported, scopes_supported and
+      token_endpoint_auth_methods_supported.
+  - id: rfc9728
+    name: OAuth 2.0 Protected Resource Metadata
+    conforms: true
+    surface: mcp
+    evidence: >-
+      https://www.storone.com/.well-known/oauth-protected-resource returns HTTP 200 naming resource,
+      authorization_servers, bearer_methods_supported and scopes_supported; the 401 from the MCP
+      endpoint carries WWW-Authenticate: Bearer realm=... resource_metadata=... pointing back at it.
+  - id: oauth2
+    name: OAuth 2.1 authorization code with PKCE
+    conforms: true
+    surface: mcp
+    evidence: >-
+      grant_types_supported [authorization_code, refresh_token],
+      code_challenge_methods_supported [S256], token_endpoint_auth_methods_supported [none].
+  - id: rfc6750
+    name: OAuth 2.0 Bearer Token Usage
+    conforms: true
+    surface: mcp
+    evidence: bearer_methods_supported ["header"]; 401 returns a Bearer challenge.
+  - id: mcp
+    name: Model Context Protocol
+    conforms: true
+    surface: mcp
+    evidence: >-
+      Live JSON-RPC 2.0 endpoint at https://www.storone.com/wp-json/mcp/mcp-oauth-server answering
+      initialize and tools/list with MCP-typed 401s; Allow header POST, GET, DELETE (Streamable HTTP).
+      Tool schemas are auth-gated and were not enumerated.
+  - id: oidc
+    name: OpenID Connect
+    conforms: false
+    evidence: /.well-known/openid-configuration returns 404 on every StorONE host.
+  - id: openapi
+    name: OpenAPI
+    conforms: false
+    evidence: >-
+      No OpenAPI document is published at any StorONE-controlled URL. The REST API reference at
+      docs.onestor.com is widdershins-shaped output — per-operation "post__login" anchors, "Code
+      samples", "Body parameter", "Example responses" and typed response tables — which means a
+      real OpenAPI document exists inside StorONE and was rendered into these pages. It is simply
+      not served anywhere public. Probes of /openapi.json, /swagger.json, /api-docs and /docs on
+      www.storone.com returned the WordPress catch-all, and the same paths on docs.onestor.com
+      returned 404. The API host is a customer's own controller node and could not be probed.
+  - id: rfc9457
+    name: Problem Details for HTTP APIs
+    conforms: false
+    evidence: Errors are typed as a bare JSON string; no application/problem+json anywhere.
+  - id: rfc8594
+    name: Sunset HTTP Header
+    conforms: false
+    evidence: No Sunset or Deprecation header and no deprecation policy is published.
+  - id: rfc6585
+    name: Additional HTTP Status Codes (429)
+    conforms: false
+    evidence: 429 is not documented on any operation; no rate limiting is published.
+  - id: pagination
+    name: Collection pagination
+    conforms: false
+    evidence: No page/offset/cursor/limit parameter on any /list operation.
+  - id: idempotency
+    name: Idempotent request keys
+    conforms: false
+    evidence: No Idempotency-Key header or equivalent in any of the 164 documented operations.
+  - id: json-api
+    name: 'JSON:API'
+    conforms: false
+    evidence: Responses use a StorONE-specific {"Result":{"Data":[...]}} envelope.
+  - id: odata
+    name: OData
+    conforms: false
+  - id: scim
+    name: SCIM
+    conforms: false
+    evidence: >-
+      Users are managed with StorONE's own /users/* operations; no urn:ietf:params:scim schema URN
+      appears anywhere in the contract.
+domain_standards:
+  note: >-
+    This is an enterprise storage platform, and the standards its market cares about are storage
+    protocols, not web-API RFCs. Every one below is named in StorONE's own API reference or release
+    notes as a protocol S1 speaks — an integrator who already speaks them needs no bespoke connector.
+  entries:
+    - id: iscsi
+      name: iSCSI
+      conforms: true
+      evidence: >-
+        POST /applications/mappings/add — "Add mapping between a volume and an iSCSi/FC/NVMeOF host";
+        PUT /resources/network/iscsi configures iSCSI networking; PUT /nodes/chap configures CHAP
+        authentication; PUT /nodes/isns configures iSNS discovery.
+      docs: https://docs.onestor.com/books/rest-api/page/applications
+    - id: fibre-channel
+      name: Fibre Channel (FC)
+      conforms: true
+      evidence: >-
+        FC named as a mapping host type; hosts are identified by WWN via PUT /hosts/wwn/add and
+        DELETE /hosts/wwn/delete.
+      docs: https://docs.onestor.com/books/rest-api/page/hosts
+    - id: nvme-of
+      name: NVMe over Fabrics (NVMe-oF)
+      conforms: true
+      evidence: PUT /resources/network/nvmeof; NVMeOF named as a mapping host type.
+      docs: https://docs.onestor.com/books/rest-api/page/resources
+    - id: alua
+      name: ALUA (Asymmetric Logical Unit Access, SCSI SPC-3)
+      conforms: true
+      evidence: GET /monitoring/alua/live reports live ALUA path state.
+      docs: https://docs.onestor.com/books/rest-api/page/monitoring
+    - id: smb
+      name: SMB
+      conforms: true
+      evidence: >-
+        POST /applications/shares/add — "Create a SMB or NFS shares inside a volume"; NAS servers
+        join Active Directory via PUT /nas_servers/active_directory/test_join.
+      docs: https://docs.onestor.com/books/rest-api/page/applications
+    - id: nfs
+      name: NFS
+      conforms: true
+      evidence: NFS named alongside SMB on the share operations; documented for Linux clients.
+      docs: https://docs.onestor.com/books/linux/page/linux-nfs-fc-and-iscsi
+    - id: s3
+      name: Amazon S3 object API
+      conforms: true
+      evidence: >-
+        Object stores with access keys carrying a `role` of object permissions —
+        POST /applications/objects/stores/create, POST /applications/objects/access_keys/create.
+        The access-key-plus-secret-plus-role shape is the S3 authorization model.
+      docs: https://docs.onestor.com/books/rest-api/page/applications
+    - id: snmp
+      name: SNMP
+      conforms: true
+      evidence: POST /notifications/targets/snmp/add — SNMP notification targets.
+      docs: https://docs.onestor.com/books/rest-api/page/notifications
+    - id: syslog
+      name: Syslog (RFC 5424)
+      conforms: true
+      evidence: POST /notifications/targets/syslog/add — syslog notification targets.
+      docs: https://docs.onestor.com/books/rest-api/page/notifications
+    - id: vss
+      name: Microsoft Volume Shadow Copy Service (VSS)
+      conforms: true
+      evidence: >-
+        PUT /applications/snapshots/vss configures VSS settings for volumes, and the snapshot
+        schedule body carries an Enable_vss flag — application-consistent snapshots on Windows.
+      docs: https://docs.onestor.com/books/rest-api/page/applications
+    - id: tcg-opal-sed
+      name: Self-Encrypting Drives (TCG Opal / SED)
+      conforms: true
+      evidence: PUT /resources/drives/sed/initialize and PUT /resources/drives/sed/supply_password.
+      docs: https://docs.onestor.com/books/rest-api/page/resources
+compliance_programs:
+  - id: iso-9001
+    name: ISO 9001 Quality Management Systems
+    claimed: true
+    certificate_number: null
+    scope: null
+    source: https://www.storone.com/quality-policy/
+    note: >-
+      The Quality Policy page states StorONE has established and maintains a quality management
+      system to ISO 9001 requirements. No certificate number, certifying body or scope statement is
+      published, so this is a claim on StorONE's own page rather than a verifiable certification.
+  - id: soc2
+    name: SOC 2
+    claimed: false
+  - id: iso-27001
+    name: ISO/IEC 27001
+    claimed: false
+  - id: fedramp
+    name: FedRAMP
+    claimed: false
+  - id: hipaa
+    name: HIPAA
+    claimed: false
+  - id: pci-dss
+    name: PCI DSS
+    claimed: false
+trust_center:
+  published: false
+  probed:
+    - url: https://trust.storone.com/
+      result: DNS did not resolve / no response

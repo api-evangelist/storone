@@ -1,0 +1,45 @@
+generated: '2026-08-29'
+method: searched
+source: >-
+  https://docs.onestor.com/books/rest-api — all 19 reference pages and both code examples,
+  read 2026-08-29.
+name: StorONE S1 REST API rate limits
+description: >-
+  StorONE documents no rate limits for the S1 REST API, and this is a case where the absence is
+  structurally correct rather than an oversight. The API is served by the customer's own controller
+  nodes to the customer's own operators — there is no shared multi-tenant capacity to protect and no
+  billing meter to enforce, so there is nobody to throttle. What that means for an agent is the
+  reverse of the usual risk: nothing will stop a runaway polling loop except the storage
+  controller's own CPU, and the controller is also serving production I/O.
+limit_count: 0
+limits: []
+response_headers:
+  documented: []
+  note: >-
+    No X-RateLimit-*, RateLimit-* or Retry-After header is documented on any response. There is no
+    runtime signal an agent can back off on.
+exhaustion_status: null
+exhaustion_note: >-
+  429 does not appear on any of the 164 documented operations. The only documented failure codes are
+  400 and, on login, 401.
+timeouts:
+  observed: >-
+    A `limit` parameter appears on at least one operation as an operation timeout — "Set limit for
+    the operation (by default it is set to 10 seconds)" — which is a per-call deadline, not a rate
+    limit.
+session_limits:
+  inactivity_timeout: >-
+    The caller sets InactivityTimeoutInMinutes on POST /login. That is the only published throttle
+    on API use, and it governs session lifetime rather than request rate.
+agent_guidance: >-
+  Poll the monitoring endpoints conservatively. GET /monitoring/performance/live,
+  /monitoring/utilization/live and /monitoring/health/current are the obvious candidates for a tight
+  loop, and they run on the same controllers that serve host I/O. Prefer the /history variants for
+  trend data and treat the live endpoints as on-demand.
+x-evidence:
+  - url: https://docs.onestor.com/books/rest-api/page/monitoring
+    http_status: 200
+    fetched: '2026-08-29'
+  - url: https://docs.onestor.com/books/rest-api/page/login
+    http_status: 200
+    fetched: '2026-08-29'

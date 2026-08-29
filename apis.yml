@@ -1,18 +1,68 @@
 aid: storone
-name: Storone
-description: 'Storone is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+name: StorONE
+description: StorONE builds S1, a software-defined enterprise storage platform that consolidates block,
+  file and object storage onto a single hardware-agnostic engine, with auto-tiering across flash and disk,
+  snapshots, replication, erasure coding and NAS/object services managed as one system. S1 is delivered
+  as software that customers deploy on their own commodity servers or on validated partner hardware, so
+  the management surface — the OmniUI web console, the StorONE CLI client and the S1 REST API — is served
+  by the customer's own controller nodes rather than by a StorONE-hosted cloud. The REST API is documented
+  in the public StorONE Documents Repository at docs.onestor.com and covers applications, volumes, snapshots,
+  shares, object stores, hosts, mappings, NAS servers, nodes, resources, replication, floating IPs, templates,
+  workflows, monitoring and notifications. StorONE also serves a Model Context Protocol endpoint from
+  its marketing site.
 url: https://raw.githubusercontent.com/api-evangelist/storone/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: enrichment
 specificationVersion: '0.20'
 created: '2026-08-29'
 modified: '2026-08-29'
 tags:
+- Storage
+- Enterprise Storage
+- Software Defined Storage
+- Data Management
+- Infrastructure
+- Block Storage
+- File Storage
+- Object Storage
+- Backup
+- Replication
+- Snapshots
 - Company
-apis: []
+apis:
+- aid: storone-s1-rest-api
+  name: StorONE S1 REST API
+  description: 'The S1 REST API manages a StorONE storage system: create and manage applications, volumes,
+    snapshots, shares, file systems and object stores; register hosts and mappings; configure NAS servers,
+    floating IPs and replication; manage nodes, drives and pools; read live and historical capacity, performance,
+    utilization and health monitoring; and configure notification targets. Authentication is a session
+    token obtained from POST /login and sent in the Authorization header. Because S1 is customer-deployed
+    software, the base URL is the address of one of the customer''s own S1 controller nodes.'
+  humanURL: https://docs.onestor.com/books/rest-api
+  baseURL: https://{s1-controller-node}
+  tags:
+  - Storage
+  - Block Storage
+  - File Storage
+  - Object Storage
+  - Replication
+  - Monitoring
+  properties:
+  - type: Documentation
+    url: https://docs.onestor.com/books/rest-api
+  - type: APIReference
+    url: https://docs.onestor.com/books/rest-api/chapter/api-reference-guide
+  - type: GettingStarted
+    url: https://docs.onestor.com/books/rest-api/chapter/examples
+  - type: Authentication
+    url: authentication/storone-authentication.yml
+  x-base-url-note: 'S1 is customer-deployed software: the API is served by the customer''s own S1 controller
+    nodes over TCP, and StorONE operates no hosted API endpoint. The base URL is therefore templated by
+    necessity, not by omission. StorONE''s own published examples use https://s1-node1.example.com/ and
+    s1-n1.example.com as placeholders for the same reason. Probed 2026-08-29: no StorONE-operated API
+    host exists to name.'
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +70,62 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://forgeglobal.com/storone_stock/
+  url: https://www.storone.com/
+- type: Documentation
+  url: https://docs.onestor.com/
+- type: APIReference
+  url: https://docs.onestor.com/books/rest-api/chapter/api-reference-guide
+- type: GettingStarted
+  url: https://docs.onestor.com/books/getting-started
+- type: Support
+  url: https://storone.zendesk.com/hc/en-us
+- type: Blog
+  url: https://www.storone.com/blog/
+- type: TermsOfService
+  url: https://www.storone.com/eula/
+- type: PrivacyPolicy
+  url: https://www.storone.com/privacy-policy/
+- type: SignUp
+  url: https://www.storone.com/request-a-demo/
+- type: WellKnown
+  url: well-known/storone-well-known.yml
+- type: MCPServer
+  url: mcp/storone-mcp.yml
+- type: LLMsTxt
+  url: llms/storone-llms.txt
+- type: Authentication
+  url: authentication/storone-authentication.yml
+- type: OAuthScopes
+  url: scopes/storone-scopes.yml
+- type: Conventions
+  url: conventions/storone-conventions.yml
+- type: ErrorCatalog
+  url: errors/storone-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/storone-lifecycle.yml
+- type: ChangeLog
+  url: changelog/storone-changelog.yml
+- type: CLI
+  url: cli/storone-cli.yml
+- type: DataModel
+  url: data-model/storone-data-model.yml
+- type: Conformance
+  url: conformance/storone-conformance.yml
+- type: Plans
+  url: plans/storone-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/storone-rate-limits.yml
+- type: Packages
+  url: packages/storone-packages.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: DomainSecurity
+  url: security/storone-domain-security.yml
+- type: Compliance
+  url: https://www.storone.com/quality-policy/
+image: https://www.storone.com/wp-content/uploads/2023/11/logo.svg
+x-enrichment:
+  date: '2026-08-29'
+  status: enriched
+  artifacts_added: 24
+  pass: local-v1

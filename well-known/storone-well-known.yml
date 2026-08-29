@@ -1,0 +1,114 @@
+generated: '2026-08-29'
+method: probed
+source: >-
+  Live GET of each /.well-known/ path on every StorONE-controlled host, 2026-08-29.
+name: StorONE well-known documents
+description: >-
+  Probe of the RFC 8615 well-known namespace on the three hosts StorONE controls: the
+  marketing/product site www.storone.com, the public documentation repository
+  docs.onestor.com, and the Zendesk-hosted help center storone.zendesk.com. Two real
+  documents were served, both on www.storone.com, and both belong to the Model Context
+  Protocol server WordPress runs there: an OAuth 2.0 authorization server metadata
+  document (RFC 8414) and an OAuth 2.0 protected resource metadata document (RFC 9728).
+  Every other path returned 404. The 404 bodies on all three hosts are full HTML pages
+  rather than bare 404s, so each candidate was read as a body and not trusted on its
+  status code alone.
+hosts:
+  - host: www.storone.com
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+        file: null
+        note: Bare nginx 404, not the WordPress template.
+      - path: /.well-known/openid-configuration
+        status: 404
+        file: null
+      - path: /.well-known/oauth-authorization-server
+        status: 200
+        file: storone-oauth-authorization-server.json
+        content_type: application/json
+        note: >-
+          RFC 8414 authorization server metadata for the site's MCP server. Issuer
+          https://www.storone.com, authorization/token/revocation endpoints under /oauth/,
+          authorization_code + refresh_token grants, PKCE S256 required, single scope "mcp",
+          token_endpoint_auth_methods_supported ["none"] (public clients), and
+          client_id_metadata_document_supported true.
+      - path: /.well-known/oauth-protected-resource
+        status: 200
+        file: storone-oauth-protected-resource.json
+        content_type: application/json
+        note: >-
+          RFC 9728 protected resource metadata. Names the protected resource as
+          https://www.storone.com/wp-json/mcp/mcp-oauth-server with bearer_methods_supported
+          ["header"] and scope "mcp" — this is how the MCP endpoint was discovered.
+      - path: /.well-known/api-catalog
+        status: 404
+        file: null
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        file: null
+      - path: /.well-known/agent-card.json
+        status: 404
+        file: null
+      - path: /.well-known/agent.json
+        status: 404
+        file: null
+  - host: docs.onestor.com
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+        file: null
+      - path: /.well-known/openid-configuration
+        status: 404
+        file: null
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        file: null
+      - path: /.well-known/oauth-protected-resource
+        status: 404
+        file: null
+      - path: /.well-known/api-catalog
+        status: 404
+        file: null
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        file: null
+      - path: /.well-known/agent-card.json
+        status: 404
+        file: null
+      - path: /.well-known/agent.json
+        status: 404
+        file: null
+  - host: storone.zendesk.com
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+        file: null
+      - path: /.well-known/openid-configuration
+        status: 404
+        file: null
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+        file: null
+      - path: /.well-known/oauth-protected-resource
+        status: 404
+        file: null
+      - path: /.well-known/api-catalog
+        status: 404
+        file: null
+      - path: /.well-known/ai-plugin.json
+        status: 404
+        file: null
+      - path: /.well-known/agent-card.json
+        status: 404
+        file: null
+      - path: /.well-known/agent.json
+        status: 404
+        file: null
+findings:
+  security_txt: false
+  api_catalog: false
+  agent_card: false
+  ai_plugin: false
+  openid_configuration: false
+  oauth_metadata: true
