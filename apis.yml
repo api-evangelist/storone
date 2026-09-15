@@ -60,7 +60,7 @@ tags_raw:
 - Snapshots
 - Company
 apis:
-- aid: storone-s1-rest-api
+- aid: storone:storone-s1-rest-api
   name: StorONE S1 REST API
   description: 'The S1 REST API manages a StorONE storage system: create and manage applications, volumes,
     snapshots, shares, file systems and object stores; register hosts and mappings; configure NAS servers,
